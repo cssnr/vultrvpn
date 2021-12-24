@@ -187,11 +187,11 @@ LOGGING = {
             'level': config('APP_LOG_LEVEL', 'DEBUG'),
             'propagate': True,
         },
-        'celery': {
-            'handlers': ['console'],
-            'level': config('APP_LOG_LEVEL', 'DEBUG'),
-            'propagate': True,
-        },
+        # 'celery': {
+        #     'handlers': ['console'],
+        #     'level': config('APP_LOG_LEVEL', 'DEBUG'),
+        #     'propagate': True,
+        # },
     },
 }
 

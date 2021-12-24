@@ -3,10 +3,11 @@ import os
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
+from django.contrib.sessions.backends.db import SessionStore
 from django.core import management
 from .vultr import Vultr
 
-logger = get_task_logger(__name__)
+logger = get_task_logger('app')
 
 
 FAKE = {
@@ -48,13 +49,12 @@ def clear_sessions():
 
 
 @shared_task()
-def create_instance(api_token, location_id):
+def create_instance(session_key, api_token, location_id):
+    logger.debug('session_key: %s', session_key)
     logger.debug('api_token: %s', api_token)
     logger.debug('location_id: %s', location_id)
 
     vultr = Vultr(api_token)
-
-    hostname = f'openvpn-{location_id}.local'
 
     os_list = vultr.list_os()
     ubuntu_lts = vultr.filter_os(os_list, 'Ubuntu 20.04 x64')
@@ -70,8 +70,8 @@ def create_instance(api_token, location_id):
         base64_bytes = base64.b64encode(message_bytes)
         base64_message = base64_bytes.decode('ascii')
         script = vultr.create_script('openvpn-bootstrap.sh', base64_message)
-    logger.debug(script)
 
+    hostname = f'{location_id}-vpn'
     data = {
         'plan': 'vc2-1c-1gb',
         'region': location_id,
@@ -82,9 +82,25 @@ def create_instance(api_token, location_id):
         'tag': 'openvpn',
     }
     logger.debug(data)
+    instance = vultr.create_instance(**data)
+    return instance
 
-    resp = vultr.create_instance(**data)
-    return resp
+
+@shared_task()
+def update_instance(session_key, instance_id):
+    logger.debug('session_key: %s', session_key)
+
+    session = SessionStore(session_key=session_key)
+    logger.debug(session)
+
+    vultr = Vultr(session['token'])
+    instance = vultr.get_instance(instance_id)
+    logger.debug(instance)
+
+    session['instance'] = instance
+    session.save()
+    if instance['server_status'] != 'ok':
+        update_instance.apply_async((session_key, instance['id'],), countdown=15)
 
 
 @shared_task()

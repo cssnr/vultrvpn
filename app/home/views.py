@@ -6,7 +6,7 @@ from django.shortcuts import render, redirect, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from .forms import InstanceForm
-from .tasks import create_instance, delete_instance
+from .tasks import create_instance, delete_instance, update_instance
 from .vultr import Vultr
 
 logger = logging.getLogger('app')
@@ -14,7 +14,7 @@ logger = logging.getLogger('app')
 
 def home_view(request, **kwargs):
     # View /
-    logger.debug(request.session['instance'] if 'instance' in request.session else None)
+    logger.debug(request.session.get('instance', None))
     if 'instance' in request.session:
         return redirect('home:manage')
 
@@ -36,8 +36,8 @@ def about_view(request, **kwargs):
 
 def manage_view(request, **kwargs):
     # View /manage/
-    logger.debug(request.session['token'] if 'token' in request.session else None)
-    logger.debug(request.session['instance'] if 'instance' in request.session else None)
+    logger.debug(request.session.get('token', None))
+    logger.debug(request.session.get('instance', None))
     if 'instance' not in request.session:
         return redirect('home:index')
 
@@ -59,17 +59,23 @@ def create_view(request, **kwargs):
         logger.debug(form.errors)
         return JsonResponse(form.errors, status=400)
 
+    request.session['token'] = form.cleaned_data['token']
+    logger.debug(request.session.session_key)
     logger.debug(form.cleaned_data['token'])
     logger.debug(form.cleaned_data['location'])
     try:
-        instance = create_instance(form.cleaned_data['token'], form.cleaned_data['location'])
+        instance = create_instance(
+            request.session.session_key,
+            form.cleaned_data['token'],
+            form.cleaned_data['location'],
+        )
     except Exception as error:
         logger.exception(error)
         return JsonResponse({'err_msg': str(error)}, status=400)
 
-    request.session['token'] = form.cleaned_data['token']
     request.session['instance'] = instance
-    messages.success(request, 'Success. Your VPN is installing now; however, I can not make the .ovpn file right now.')
+    update_instance.apply_async((request.session.session_key, instance['id'],), countdown=15)
+    messages.success(request, 'Success. Your VPN is installing now, please wait 1-2 minutes...')
     return JsonResponse(instance)
 
 
@@ -82,13 +88,12 @@ def delete_view(request, **kwargs):
 
     try:
         delete_instance(request.session['token'], request.session['instance']['id'])
+        del request.session['instance']
+        return redirect('home:index')
     except Exception as error:
         logger.exception(error)
         messages.error(request, f'Error deleting instance: {str(error)}')
         return redirect('home:manage')
-
-    del request.session['instance']
-    return redirect('home:index')
 
 
 @csrf_exempt

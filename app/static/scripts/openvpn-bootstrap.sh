@@ -2,6 +2,8 @@
 
 set -e
 
+exec > >(tee -a "/root/install.log") 2>&1
+
 VERSION="2.4.7-1ubuntu2.20.04.3"
 SERVER_PATH="/etc/openvpn/server"
 VPN_VARS='
@@ -50,7 +52,7 @@ while true; do
     sleep 5
 done
 
-apt-get -y install "openvpn=${VERSION}" easy-rsa firewalld
+apt-get -y install "openvpn=${VERSION}" easy-rsa firewalld nginx
 
 /usr/sbin/modprobe tun
 echo 'net.ipv4.ip_forward=1' >>/etc/sysctl.conf
@@ -85,19 +87,38 @@ firewall-cmd --add-masquerade --permanent
 firewall-cmd --query-masquerade
 DEVICE=$(ip route | awk '/^default via/ {print $5}')
 firewall-cmd --permanent --direct --passthrough ipv4 -t nat -A POSTROUTING -s 10.8.0.0/24 -o "${DEVICE}" -j MASQUERADE
+firewall-cmd --permanent --zone=public --add-port=80/tcp
 firewall-cmd --reload
 
 systemctl -f enable openvpn-server@server.service
 systemctl start openvpn-server@server.service
 
-
-CA_CERT=$(awk '{printf "%s\\n", $0}' < "${SERVER_PATH}/ca.crt")
+CA_CERT=$(cat "${SERVER_PATH}/ca.crt")
 IP_ADDR=$(ip -f inet addr show "${DEVICE}" | grep inet | awk '{print $2}' | awk -F'/' '{print $1}')
+
 PASSWORD=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)
 useradd -p "$(openssl passwd -1 ${PASSWORD})" -s /usr/sbin/nologin openvpn
 echo "${PASSWORD}" > /root/openvpn
 
-curl -X POST "https://intranet-proxy.cssnr.com/callback/" \
-    -F "ip_address=${IP_ADDR}" \
-    -F "password=${PASSWORD}" \
-    -F "ca_cert=${CA_CERT}"
+OVPN_DATA="client
+dev tun
+proto udp
+remote ${IP_ADDR} 1194
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+comp-lzo
+verb 3
+auth-user-pass
+<ca>
+${CA_CERT}
+</ca>"
+
+echo "/var/www/html/${HOSTNAME}.ovpn"
+echo "${OVPN_DATA}" > "/var/www/html/${HOSTNAME}.ovpn"
+
+#curl -X POST "https://intranet-proxy.cssnr.com/callback/" \
+#    -F "ip_address=${IP_ADDR}" \
+#    -F "password=${PASSWORD}" \
+#    -F "ca_cert=${CA_CERT}"

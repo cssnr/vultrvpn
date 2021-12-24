@@ -4,20 +4,52 @@
 {% load static %}
 {% load home_tags %}
 
-{% block head %}{% endblock %}
+{% block head %}
+    {% if instance.server_status != 'ok' %}
+        <meta http-equiv="refresh" content="15">
+    {% endif %}
+{% endblock %}
 
 {% block body %}
     <div class="container mt-2">
 
         <h1 class="display-4">Manage Instance</h1>
 
-        <p class="lead">Coming soon...</p>
+        {% if instance.server_status != 'ok' %}
+            <div class="alert alert-warning" role="alert">
+                <strong>Server Status:</strong> {{ instance.server_status }}
+            </div>
+            <p>Note: This page will refresh every 15 seconds until server status is ok.</p>
+            <p>Until then, you may not be able to download the VPN file or connect to VPN.</p>
+        {% else %}
+            <div class="alert alert-success" role="alert">
+                <strong>Server Status:</strong> {{ instance.server_status }}
+            </div>
+        {% endif %}
 
-        <div class="mb-3">
-            <code>
-                {{ instance }}
-            </code>
-        </div>
+        <table class="table">
+            <tbody>
+            <tr>
+                <th scope="row">VPN File</th>
+                <td>
+                    {% if instance.main_ip == '0.0.0.0' %}
+                        Awaiting IP address update...
+                    {% else %}
+                        <a href="http://{{ instance.main_ip }}/{{ instance.hostname }}.ovpn">
+                            http://{{ instance.main_ip }}/{{ instance.hostname }}.ovpn</a>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <th scope="row">Username</th>
+                <td>root</td>
+            </tr>
+            <tr>
+                <th scope="row">Password</th>
+                <td>{{ instance.default_password }}</td>
+            </tr>
+            </tbody>
+        </table>
 
         <form method="post" action="{% url 'home:delete' %}" id="main-form">
             {% csrf_token %}
@@ -25,7 +57,7 @@
             <input type="hidden" name="instance_id" value="{{ instance.id }}">
             <input type="hidden" name="action" value="delete">
 
-            <button type="button" class="btn btn-warning btn-lg mb-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            <button type="button" class="btn btn-danger btn-lg mb-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 Delete VPN Instance
             </button>
 
@@ -42,7 +74,7 @@
                         hostname: {{ instance.hostname }}<br>
                         address: {{ instance.main_ip }}<br>
                       </p>
-                      <p class="lead">This can NOT be undone!</p>
+                      <p class="lead">WARNING: This can NOT be undone!</p>
                   </div>
                   <div class="modal-footer">
                       <button type="submit" class="btn btn-danger me-auto">Delete Instance</button>
@@ -53,6 +85,12 @@
             </div>
 
         </form>
+
+        <div class="mb-3">
+            <code>
+                {{ instance }}
+            </code>
+        </div>
 
     </div>
 
