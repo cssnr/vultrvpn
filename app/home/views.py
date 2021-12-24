@@ -74,7 +74,8 @@ def create_view(request, **kwargs):
         return JsonResponse({'err_msg': str(error)}, status=400)
 
     request.session['instance'] = instance
-    update_instance.apply_async((request.session.session_key, instance['id'],), countdown=15)
+    request.session['password'] = instance['default_password']
+    update_instance.apply_async((request.session.session_key, instance['id'],), countdown=30)
     messages.success(request, 'Success. Your VPN is installing now, please wait 1-2 minutes...')
     return JsonResponse(instance)
 

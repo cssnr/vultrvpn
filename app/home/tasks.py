@@ -89,18 +89,18 @@ def create_instance(session_key, api_token, location_id):
 @shared_task()
 def update_instance(session_key, instance_id):
     logger.debug('session_key: %s', session_key)
-
     session = SessionStore(session_key=session_key)
     logger.debug(session)
-
     vultr = Vultr(session['token'])
     instance = vultr.get_instance(instance_id)
     logger.debug(instance)
-
     session['instance'] = instance
     session.save()
-    if instance['server_status'] != 'ok':
-        update_instance.apply_async((session_key, instance['id'],), countdown=15)
+    status = instance['server_status']
+    if status in ['closed', 'suspended']:
+        logger.warning('server_status set to %s, aborting...', status)
+    elif status != 'ok':
+        update_instance.apply_async((session_key, instance['id'],), countdown=30)
 
 
 @shared_task()

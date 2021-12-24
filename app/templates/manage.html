@@ -6,7 +6,7 @@
 
 {% block head %}
     {% if instance.server_status != 'ok' %}
-        <meta http-equiv="refresh" content="15">
+        <meta http-equiv="refresh" content="30">
     {% endif %}
 {% endblock %}
 
@@ -19,8 +19,9 @@
             <div class="alert alert-warning" role="alert">
                 <strong>Server Status:</strong> {{ instance.server_status }}
             </div>
-            <p>Note: This page will refresh every 15 seconds until server status is ok.</p>
-            <p>Until then, you may not be able to download the VPN file or connect to VPN.</p>
+            <p>Note: This page will refresh every 30 seconds until server status is ok.
+                The server will be ready before then so check the VPN file below in a minute or two.</p>
+            <p>Once you can download the VPN file below you should be able to connect to VPN.</p>
         {% else %}
             <div class="alert alert-success" role="alert">
                 <strong>Server Status:</strong> {{ instance.server_status }}
@@ -35,7 +36,7 @@
                     {% if instance.main_ip == '0.0.0.0' %}
                         Awaiting IP address update...
                     {% else %}
-                        <a href="http://{{ instance.main_ip }}/{{ instance.hostname }}.ovpn">
+                        <a href="http://{{ instance.main_ip }}/{{ instance.hostname }}.ovpn" target="_blank">
                             http://{{ instance.main_ip }}/{{ instance.hostname }}.ovpn</a>
                     {% endif %}
                 </td>
@@ -46,7 +47,7 @@
             </tr>
             <tr>
                 <th scope="row">Password</th>
-                <td>{{ instance.default_password }}</td>
+                <td>{{ request.session.password }}</td>
             </tr>
             </tbody>
         </table>
