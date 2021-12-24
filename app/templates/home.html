@@ -1,0 +1,63 @@
+{% extends "main.html" %}
+{% block home_active %}active{% endblock %}
+{% block title %}Home{% endblock %}
+{% load static %}
+{% load home_tags %}
+
+{% block head %}{% endblock %}
+
+{% block body %}
+    <div class="container mt-2">
+
+        <h1 class="display-4">Vultr VPN</h1>
+        <p class="lead">Create the VPN... Use the VPN... Delete the VPN...</p>
+
+        <form method="post" action="{% url 'home:create' %}" id="main-form">
+            {% csrf_token %}
+
+            <h4>Enter Token & Whitelist IP</h4>
+
+            <div class="input-group input-group-lg mb-3">
+                <a href="https://my.vultr.com/settings/#settingsapi" class="btn btn-outline-secondary" target="_blank">API Token</a>
+                <input type="text" class="form-control" placeholder="" id="token" name="token" required >
+                <div class="invalid-feedback" id="token-invalid"></div>
+            </div>
+
+            <div class="input-group input-group-lg mb-3">
+                <a class="btn btn-outline-secondary clip" href="javascript:void(0)" data-clipboard-text="{% get_config 'PUBLIC_IP' %}">IP Address</a>
+                <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="visually-hidden">Toggle Dropdown</span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item clip" href="javascript:void(0)" data-clipboard-text="{% get_config 'PUBLIC_IP' %}">
+                        Copy IP to Clipboard</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="https://my.vultr.com/settings/#settingsapi" target="_blank">
+                        Open Vultr Control Panel</a></li>
+                </ul>
+                <input type="text" class="form-control" aria-label="IP Address" value="{% get_config 'PUBLIC_IP' %} / 32" readonly />
+            </div>
+
+            <h4>Choose A Location</h4>
+            {% for loc in available %}
+                <input type="radio" class="btn-check" name="location" id="{{ loc.id }}" value="{{ loc.id }}" autocomplete="off" required />
+                <label class="btn btn-outline-primary mb-1" for="{{ loc.id }}">{{ loc.city }}, {{ loc.country }}</label>
+            {% endfor %}
+
+            <h4>Create the VPN</h4>
+            <div class="progress mb-1">
+              <div class="progress-bar progress-bar-striped progress-bar-animated bg-info mb-1" role="progressbar" style="width:100%;display:none;" id="submit-progress"></div>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-lg mb-3" id="main-submit">
+                Create VPN Instance
+            </button>
+
+        </form>
+
+    </div>
+{% endblock %}
+
+{% block tail %}
+    <script type="text/javascript" src="{% static 'main/js/createinstance.js' %}"></script>
+{% endblock %}

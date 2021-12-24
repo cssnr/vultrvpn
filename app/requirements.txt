@@ -1,0 +1,12 @@
+celery>=5,<6
+django==3.2.*
+django-celery-beat==2.2.*
+django-debug-toolbar>=3,<4
+django-extensions>=3,<4
+django-redis==5.2.*
+gunicorn
+mysqlclient
+python-decouple
+requests
+sentry-sdk
+Werkzeug==2.*

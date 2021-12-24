@@ -1,0 +1,76 @@
+version: '3.9'
+
+services:
+  nginx:
+    build: ./nginx
+    image: vultrvpn-nginx:latest
+    deploy:
+      mode: global
+    volumes:
+      - data_dir:/data
+    secrets:
+      - source: cssnr_basic_http_auth
+        target: /etc/nginx/auth.users
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+
+  app:
+    build: ./app
+    image: vultrvpn-app:latest
+    env_file: settings.env
+    command: "gunicorn vultrvpn.wsgi:application -w 2 -b 0.0.0.0:9000"
+    deploy:
+      mode: global
+    volumes:
+      - data_dir:/data
+    depends_on:
+      - redis
+
+  worker:
+    image: vultrvpn-app:latest
+    env_file: settings.env
+    command: "celery -A vultrvpn worker -l INFO -c 2"
+    deploy:
+      replicas: 1
+    depends_on:
+      - app
+      - redis
+
+  beat:
+    image: vultrvpn-app:latest
+    env_file: settings.env
+    command: "celery -A vultrvpn beat -l INFO -S django"
+    deploy:
+      replicas: 1
+    depends_on:
+      - app
+      - redis
+
+  flower:
+    image: mher/flower
+    env_file: settings.env
+    deploy:
+      replicas: 1
+    volumes:
+      - flower_data:/data
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:6-alpine
+    command: "redis-server --appendonly yes"
+    deploy:
+      replicas: 1
+    volumes:
+      - redis_data:/data
+
+secrets:
+  cssnr_basic_http_auth:
+    file: ~/basic_http_auth
+
+volumes:
+  data_dir:
+  flower_data:
+  redis_data:

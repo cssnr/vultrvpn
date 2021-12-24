@@ -1,0 +1,59 @@
+{% extends "main.html" %}
+{% block manage_active %}active{% endblock %}
+{% block title %}Manage{% endblock %}
+{% load static %}
+{% load home_tags %}
+
+{% block head %}{% endblock %}
+
+{% block body %}
+    <div class="container mt-2">
+
+        <h1 class="display-4">Manage Instance</h1>
+
+        <p class="lead">Coming soon...</p>
+
+        <div class="mb-3">
+            <code>
+                {{ instance }}
+            </code>
+        </div>
+
+        <form method="post" action="{% url 'home:delete' %}" id="main-form">
+            {% csrf_token %}
+
+            <input type="hidden" name="instance_id" value="{{ instance.id }}">
+            <input type="hidden" name="action" value="delete">
+
+            <button type="button" class="btn btn-warning btn-lg mb-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                Delete VPN Instance
+            </button>
+
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                      <p>
+                        id: {{ instance.id }}<br>
+                        hostname: {{ instance.hostname }}<br>
+                        address: {{ instance.main_ip }}<br>
+                      </p>
+                      <p class="lead">This can NOT be undone!</p>
+                  </div>
+                  <div class="modal-footer">
+                      <button type="submit" class="btn btn-danger me-auto">Delete Instance</button>
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+        </form>
+
+    </div>
+
+{% endblock %}
