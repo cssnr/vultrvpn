@@ -49,6 +49,9 @@ services:
     command: "celery -A vultrvpn worker -l INFO -c 2"
     deploy:
       replicas: 1
+      placement:
+        constraints:
+          - "node.hostname==docker01.hosted-domains.com"
     networks:
       - net-internal
     depends_on:

@@ -20,8 +20,8 @@
                 <strong>Server Status:</strong> {{ instance.server_status }}
             </div>
             <p>Note: This page will refresh every 30 seconds until server status is ok.
-                The server will be ready before then so check the VPN file below in a minute or two.</p>
-            <p>Once you can download the VPN file below you should be able to connect to VPN.</p>
+                The server will be ready before then so check the VPN file in a minute or two.</p>
+            <p>Once you can download the VPN file below you should be able to connect to the VPN.</p>
         {% else %}
             <div class="alert alert-success" role="alert">
                 <strong>Server Status:</strong> {{ instance.server_status }}
@@ -40,6 +40,10 @@
                             http://{{ instance.main_ip }}/{{ instance.hostname }}.ovpn</a>
                     {% endif %}
                 </td>
+            </tr>
+            <tr>
+                <th scope="row">IP Address</th>
+                <td>{{ instance.main_ip }}</td>
             </tr>
             <tr>
                 <th scope="row">Username</th>
@@ -75,7 +79,7 @@
                         hostname: {{ instance.hostname }}<br>
                         address: {{ instance.main_ip }}<br>
                       </p>
-                      <p class="lead">WARNING: This can NOT be undone!</p>
+                      <p class="lead text-warning">WARNING: This can NOT be undone!</p>
                   </div>
                   <div class="modal-footer">
                       <button type="submit" class="btn btn-danger me-auto">Delete Instance</button>

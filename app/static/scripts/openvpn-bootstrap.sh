@@ -6,6 +6,7 @@ exec > >(tee -a "/root/install.log") 2>&1
 
 VERSION="2.4.7-1ubuntu2.20.04.3"
 SERVER_PATH="/etc/openvpn/server"
+CLIENT_PATH="/etc/openvpn/client"
 VPN_VARS='
 export KEY_COUNTRY="US"
 export KEY_PROVINCE="WA"
@@ -40,9 +41,9 @@ push "dhcp-option DNS 1.1.1.1"
 push "dhcp-option DNS 208.67.222.222"
 #user nobody
 #group nobody
-verify-client-cert none
+#verify-client-cert none
 duplicate-cn
-plugin /usr/lib/x86_64-linux-gnu/openvpn/plugins/openvpn-plugin-auth-pam.so login
+#plugin /usr/lib/x86_64-linux-gnu/openvpn/plugins/openvpn-plugin-auth-pam.so login
 '
 
 sleep 10
@@ -93,14 +94,24 @@ firewall-cmd --reload
 systemctl -f enable openvpn-server@server.service
 systemctl start openvpn-server@server.service
 
-CA_CERT=$(cat "${SERVER_PATH}/ca.crt")
 IP_ADDR=$(ip -f inet addr show "${DEVICE}" | grep inet | awk '{print $2}' | awk -F'/' '{print $1}')
+[[ -z "${IP_ADDR}" ]] && IP_ADDR=$(curl -LksSm5 ip.me 2>/dev/null)
+[[ -z "${IP_ADDR}" ]] && IP_ADDR=$(curl -LksSm5 ifconfig.me 2>/dev/null)
 
-PASSWORD=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 12)
-useradd -p "$(openssl passwd -1 ${PASSWORD})" -s /usr/sbin/nologin openvpn
-echo "${PASSWORD}" > /root/openvpn
+CLIENT="client"
 
-OVPN_DATA="client
+cd /etc/openvpn/easy-rsa
+export KEY_NAME="${CLIENT}"
+./easyrsa --batch gen-req "${CLIENT}" nopass
+./easyrsa --batch sign-req client "${CLIENT}"
+
+cp pki/ca.crt "pki/issued/${CLIENT}.crt" "pki/private/${CLIENT}.key" "${CLIENT_PATH}"
+
+CA=$(cat "${CLIENT_PATH}/ca.crt")
+CRT=$(cat "${CLIENT_PATH}/${CLIENT}.crt")
+KEY=$(cat "${CLIENT_PATH}/${CLIENT}.key")
+
+CDATA="client
 dev tun
 proto udp
 remote ${IP_ADDR} 1194
@@ -110,15 +121,14 @@ persist-key
 persist-tun
 comp-lzo
 verb 3
-auth-user-pass
 <ca>
-${CA_CERT}
-</ca>"
+${CA}
+</ca>
+<cert>
+${CRT}
+</cert>
+<key>
+${KEY}
+</key>"
 
-echo "/var/www/html/${HOSTNAME}.ovpn"
-echo "${OVPN_DATA}" > "/var/www/html/${HOSTNAME}.ovpn"
-
-#curl -X POST "https://intranet-proxy.cssnr.com/callback/" \
-#    -F "ip_address=${IP_ADDR}" \
-#    -F "password=${PASSWORD}" \
-#    -F "ca_cert=${CA_CERT}"
+echo "${CDATA}" > "/var/www/html/${HOSTNAME}.ovpn"
