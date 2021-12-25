@@ -10,12 +10,14 @@
     <div class="container mt-2">
 
         <h1 class="display-4">Vultr VPN</h1>
-        <p class="lead">Create the VPN... Use the VPN... Delete the VPN...</p>
+        <p class="lead">On-demand OpenVPN for less than $0.01 / Hour using
+            <a href="https://www.vultr.com/?ref=6905748" target="_blank">Vultr</a>.</p>
+        <p>For more information visit the <a href="{% url 'home:about' %}">About page</a>.</p>
 
         <form method="post" action="{% url 'home:create' %}" id="main-form">
             {% csrf_token %}
 
-            <h4>Enter Token & Whitelist IP</h4>
+            <h4>1. Enter Token & Whitelist IP</h4>
 
             <div class="input-group input-group-lg mb-3">
                 <a href="https://my.vultr.com/settings/#settingsapi" class="btn btn-outline-secondary" target="_blank">API Token</a>
@@ -38,17 +40,17 @@
                 <input type="text" class="form-control" aria-label="IP Address" value="{% get_config 'PUBLIC_IP' %} / 32" readonly />
             </div>
 
-            <h4>Choose A Location</h4>
+            <h4>2. Choose A Location</h4>
             {% for loc in available %}
                 <input type="radio" class="btn-check" name="location" id="{{ loc.id }}" value="{{ loc.id }}" autocomplete="off" required />
                 <label class="btn btn-outline-primary mb-1" for="{{ loc.id }}">{{ loc.city }}, {{ loc.country }}</label>
             {% endfor %}
 
-            <h4>Create the VPN</h4>
-            <div class="progress mb-1">
-              <div class="progress-bar progress-bar-striped progress-bar-animated bg-info mb-1" role="progressbar" style="width:100%;display:none;" id="submit-progress"></div>
+            <h4>3. Create the VPN</h4>
+            <div class="progress mb-3">
+              <div class="progress-bar progress-bar-striped progress-bar-animated bg-info mb-1" role="progressbar"
+                   style="width:100%;display:none;" id="submit-progress"></div>
             </div>
-
             <button type="submit" class="btn btn-success btn-lg mb-3" id="main-submit">
                 Create VPN Instance
             </button>

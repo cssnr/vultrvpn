@@ -10,6 +10,30 @@
 
         <h1 class="display-4">About</h1>
         <p class="lead">Create the VPN... Use the VPN... Delete the VPN...</p>
+        <p>This product provides you with an ephemeral VPN for less than $0.01 per hour (that is correct, 1 penny per hour).</p>
+        <h4>Prerequisites</h4>
+        <p>Before you begin you will need the following:</p>
+        <ol>
+            <li>Free Vultr Account: <a href="https://www.vultr.com/?ref=6905748" target="_blank">
+                https://www.vultr.com</a></li>
+            <li>OpenVPN Client: <a href="https://openvpn.net/download-open-vpn" target="_blank">
+                https://openvpn.net/download-open-vpn</a></li>
+            <p>Downloads for Windows, Mac, Linux, and Mobile under the "OpenVPN Connect" section.</p>
+        </ol>
+        <h4>How to Use</h4>
+        <ol>
+            <li>Whitelist our IP address and copy your API token at Vultr.</li>
+            <p><a href="https://my.vultr.com/settings/#settingsapi" target="_blank">
+                https://my.vultr.com/settings/#settingsapi</a></p>
+            <p><a class="clip" href="javascript:void(0)" data-clipboard-text="{% get_config 'PUBLIC_IP' %}">
+                <i class="fas fa-copy me-2"></i></a> <strong>{% get_config 'PUBLIC_IP' %}</strong>/32</p>
+            <li>Paste in your token, choose a location, and click the Create VPN button.</li>
+            <p><a href="{% url 'home:index' %}">Go to Home Page to Create VPN</a></p>
+            <li>You will be redirected to page with the status of your VPN and download link to the VPN file.</li>
+            <p>Your VPN will take 1-2 minutes to setup, then you can download the file, connect and use the VPN.<br>
+                Once the VPN file is downloadable, the VPN should be ready to use.</p>
+            <li>When you are done, click the Delete VPN button. That is all.</li>
+        </ol>
 
     </div>
 {% endblock %}

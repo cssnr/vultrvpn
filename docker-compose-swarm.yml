@@ -35,7 +35,10 @@ services:
     env_file: ${ENV_FILE}
     command: "gunicorn vultrvpn.wsgi:application -w 2 -b 0.0.0.0:9000"
     deploy:
-      mode: global
+      replicas: 1
+      placement:
+        constraints:
+          - "node.hostname==docker01.hosted-domains.com"
     volumes:
       - data_dir:/data
     networks:
@@ -99,11 +102,6 @@ secrets:
 
 volumes:
   data_dir:
-    driver: local
-    driver_opts:
-      type: nfs
-      o: "addr=${NFS_HOST},rw"
-      device: ":/data/docker/${NFS_DIRECTORY}"
   flower_data:
   redis_data:
 
