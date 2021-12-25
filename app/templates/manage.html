@@ -16,7 +16,7 @@
         <h1 class="display-4">Manage Instance</h1>
 
         {% if instance.server_status != 'ok' %}
-            <div class="alert alert-warning" role="alert">
+            <div class="alert alert-secondary" role="alert">
                 <strong>Server Status:</strong> {{ instance.server_status }}
             </div>
             <p>Note: This page will refresh every 30 seconds until server status is ok.
@@ -62,7 +62,7 @@
             <input type="hidden" name="instance_id" value="{{ instance.id }}">
             <input type="hidden" name="action" value="delete">
 
-            <button type="button" class="btn btn-danger btn-lg mb-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            <button type="button" class="btn btn-outline-danger btn-lg mb-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 Delete VPN Instance
             </button>
 

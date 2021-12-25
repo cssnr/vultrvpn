@@ -1,7 +1,5 @@
 $(document).ready(function() {
 
-    new ClipboardJS(".clip");
-
     $(".form-control").focus(function() {
         $(this).removeClass("is-invalid");
     });

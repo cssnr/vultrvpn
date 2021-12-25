@@ -48,4 +48,7 @@ $(document).ready(function() {
         return false;
     });
 
+    // Enable clipboardjs everywhere
+    new ClipboardJS(".clip");
+
 });

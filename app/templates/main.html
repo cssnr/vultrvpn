@@ -13,12 +13,12 @@
 
     {% block meta %}
         <meta name="author" content="Shane"/>
-        <meta name="title" content="Vultr VPN"/>
-        <meta name="description" content="Create the VPN... Use the VPN... Delete the VPN..."/>
+        <meta name="title" content="VultrVPN"/>
+        <meta name="description" content="Create an on-demand VPN for less than $0.01 per hour in 1 click..."/>
 
         <meta property="og:author" content="Shane">
-        <meta property="og:title" content="Vultr VPN">
-        <meta property="og:description" content="Create the VPN... Use the VPN... Delete the VPN...">
+        <meta property="og:title" content="VultrVPN">
+        <meta property="og:description" content="Create an on-demand VPN for less than $0.01 per hour in 1 click...">
         <meta property="og:type" content="website">
         <meta property="og:url" content="{{ request.META|get_scheme }}://{{ request.META.HTTP_HOST }}{% url 'home:index' %}">
         <meta property="og:image" content="{{ request.META|get_scheme }}://{{ request.META.HTTP_HOST }}{% static 'images/logo128.webp' %}">
@@ -56,10 +56,10 @@
                             Resources <i class="fas fa-angle-down mx-1"></i></a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown1">
                             <li><a class="dropdown-item" href="{% get_config "DISCORD_INVITE" %}" target="_blank">
-                                Join our <i class="fab fa-discord"></i> Discord <i class="fas fa-external-link-alt me-1"></i></a></li>
+                                Join our Discord <i class="fas fa-external-link-alt me-1"></i></a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="https://github.com/smashedr" target="_blank">
-                                Browse <i class="fab fa-github"></i> GitHub <i class="fas fa-external-link-alt me-1"></i></a></li>
+                            <li><a class="dropdown-item" href="{% get_config "GITHUB_URL" %}" target="_blank">
+                                View Source Code <i class="fas fa-external-link-alt me-1"></i></a></li>
                         </ul>
                     </li>
                 </ul>
